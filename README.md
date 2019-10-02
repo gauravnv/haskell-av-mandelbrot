@@ -2,7 +2,7 @@
 
 ## Project Proposal
 
-This is a project in Haskell to test the feasibility of Haskell to build an audio-visual file that maps audio to the visualization of [Mandelbrot Set](https://en.wikipedia.org/wiki/Mandelbrot_set).  
+This is a project to test the feasibility of Haskell to build an audio-visual file that maps audio to the visualization of [Mandelbrot Set](https://en.wikipedia.org/wiki/Mandelbrot_set).  
 
 ### What is the problem?
 
