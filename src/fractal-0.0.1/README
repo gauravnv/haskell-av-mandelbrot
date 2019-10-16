@@ -1,0 +1,17 @@
+The fractal program generates Newton, Julia and Mandelbrot fractals. Output is
+to standard output in PGM (Portable Graymap) format. There is currently no
+support for colour. I suggest using a general-purpose image editor such as the
+GIMP to adjust brightness levels and add colour.
+
+Fractal accepts the following options:
+
+  -s SCALE            --scale=SCALE                scale 1 unit to SCALE pixels
+                      --ll=X,Y, --lower-left=X,Y   set lower left of viewport to X,Y
+                      --tr=X,Y, --upper-right=X,Y  set upper right of viewport to X,Y
+  -m                  --mandelbrot                 render the Mandelbrot set
+  -j X,Y              --julia=X,Y                  render the Julia set at X,Y
+  -n X1,Y1:X2,Y2;...  --newton=X1,Y1:X2,Y2;...     render the Newton fractal for a polynomial with roots at X1,Y1, X2,Y2, ...
+
+(Newton fractals for functions other than polynomials are supported by the
+underlying code, but there is currently no way to specify them on the command
+line.)
