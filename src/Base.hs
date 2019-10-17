@@ -11,13 +11,14 @@ main :: IO ()
 main = do
     putStrLn "Beginning rendering of image."
     -- makenframes listOfImages 1 10
-    juicyToFFmpeg (generateNImages 10) ("mandelbrot.avi")
+    juicyToFFmpeg (generateNImages 100) ("mandelbrot.avi")
 
 params :: EncodingParams
-params = defaultParams 400 300
+params = defaultParams 400 400
 
 juicyToFFmpeg :: [Image PixelRGB8] -> FilePath -> IO ()
 juicyToFFmpeg frames fp = do 
+                        initFFmpeg
                         writer <- imageWriter params fp
                         -- give Just image data to writer to append it
                         forM_ frames (writer . Just)
