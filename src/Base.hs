@@ -1,20 +1,42 @@
+module Base where
+
 import Codec.Picture
 import Codec.Picture.Types
 import System.Environment
--- import Codec.FFmpeg
+import Codec.FFmpeg
+import Codec.FFmpeg.Juicy
+import Control.Monad (forM_)
 
 main :: IO ()
 main = do
     putStrLn "Beginning rendering of image."
-    makenframes 1 100
+    -- makenframes listOfImages 1 10
+    juicyToFFmpeg (generateNImages 100) ("mandelbrot.avi")
 
-makenframes :: Int -> Int -> IO ()
-makenframes n end
- 							| n >= end = putStrLn "Completed all"
-							| otherwise    = do
-																savePngImage ("frames\\"++(show n)++".jpg") (generateFractal n)
-																putStrLn ("Completed"++(show n))
-																makenframes (n+1) end
+params :: EncodingParams
+params = defaultParams 400 400
+
+juicyToFFmpeg :: [Image PixelRGB8] -> FilePath -> IO ()
+juicyToFFmpeg frames fp = do 
+                        initFFmpeg
+                        writer <- imageWriter params fp
+                        -- give Just image data to writer to append it
+                        forM_ frames (writer . Just)
+                        writer Nothing -- finalize, or else you'll break it
+
+generateNImages :: Int -> [Image PixelRGB8]
+generateNImages 0 = []
+generateNImages end = (generateFractal end):(generateNImages (end-1))
+
+-- makenframes :: Int -> Int -> IO ()
+-- makenframes n end
+--             | n >= end = putStrLn "Completed all, writing video"
+--             | otherwise    = do
+--                 savePngImage ("frames\\"++(show n)++".jpg") (generateFractal n)
+--                 putStrLn ("Completed"++(show n))
+--                 makenframes (n+1) end
+
+
 offset :: (Float, Float)
 offset = (0.099, 0.89398)
 
@@ -27,8 +49,8 @@ width = 400
 height :: Int
 height = 300
 
-generateFractal :: Int -> DynamicImage
-generateFractal n = ImageRGB8 $ (generateImage (mandelbrot n)) width height
+generateFractal :: Int -> Image PixelRGB8
+generateFractal n = (generateImage (mandelbrot n)) width height
 
 iters :: Int -> Int
 iters n = 25 + n*n
