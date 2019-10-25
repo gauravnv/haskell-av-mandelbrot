@@ -11,11 +11,15 @@ import Control.Monad (forM_)
 main :: IO ()
 main = do
     putStrLn "Enter the beginning frame number"
-    start <- getLine
+    beginning <- getLine
     putStrLn "Enter the end frame number"
-    end <- getLine
+    ending <- getLine
     putStrLn "Beginning rendering of image."
-    let frames = generateNImages (read start :: Int) (read end :: Int)
+    let start = (read beginning :: Int)
+        -- if (start < 1) then (let start = 1)
+    let end = (read ending :: Int)
+        -- if (end < 1) then (let end = 1)
+    let frames = generateNImages start end
     juicyToFFmpeg frames ("mandelbrot.avi")
     putStrLn "Done"
 
