@@ -10,14 +10,15 @@ import Control.Monad (forM_)
 -- Main function: generates mandelbrot images and then stitches them together into a video.
 main :: IO ()
 main = do
-    putStrLn "Enter the beginning frame number"
+    putStrLn "Enter beginning frame number"
     beginning <- getLine
-    putStrLn "Enter the end frame number"
+    putStrLn "Enter a non-negative end frame number"
     ending <- getLine
-    putStrLn "Beginning rendering of image."
     let start = sanitizeInput (read beginning :: Int)
     let end = sanitizeInput (read ending :: Int)
+    putStrLn "Beginning image generation."
     let frames = generateNImages start end
+    putStrLn "Beginning video render."
     juicyToFFmpeg frames ("mandelbrot.mp4")
     putStrLn "Done"
     where
@@ -37,8 +38,15 @@ main = do
         * Not sure? The documentation doesn't include a seventh argument, but
           the compiler complains if we don't provide it.
 -}
+
+width :: Int
+width = 400
+
+height :: Int
+height = 300
+
 params :: EncodingParams
-params = EncodingParams 200 200 3 Nothing Nothing "" Nothing
+params = EncodingParams width height 3 Nothing Nothing "" Nothing
 
 {- Given a list of images and a file path, stitch the images together with
    FFmpeg and save the resulting video at the given file path. -}
@@ -72,12 +80,6 @@ offset = (0.099, 0.89398)
 
 zoomfactor :: Double
 zoomfactor = 0.03
-
-width :: Int
-width = 400
-
-height :: Int
-height = 300
 
 generateFractal :: Int -> Image PixelRGB8
 generateFractal n = (generateImage (mandelbrot n)) width height
