@@ -10,8 +10,8 @@ import Control.Monad (forM_)
 main :: IO ()
 main = do
     putStrLn "Beginning rendering of image."
-    -- makenframes listOfImages 1 10
-    juicyToFFmpeg (generateNImages  177 180) ("mandelbrot.avi")
+    let frames = generateNImages  177 180
+    juicyToFFmpeg frames ("mandelbrot.avi")
 
 params :: EncodingParams
 params = EncodingParams 200 200 3 (Just avCodecIdMpeg4) Nothing "" Nothing
@@ -22,22 +22,13 @@ juicyToFFmpeg frames fp = do
                         writer <- imageWriter params fp
                         -- give Just image data to writer to append it
                         forM_ frames (writer . Just)
-                        writer Nothing -- finalize, or else you'll break it
+                        writer Nothing
 
 generateNImages :: Int -> Int -> [Image PixelRGB8]
 
 generateNImages start end
                 |start > end = []
                 |otherwise     = (generateFractal end):(generateNImages start (end-1))
-
--- makenframes :: Int -> Int -> IO ()
--- makenframes n end
---             | n >= end = putStrLn "Completed all, writing video"
---             | otherwise    = do
---                 savePngImage ("frames\\"++(show n)++".jpg") (generateFractal n)
---                 putStrLn ("Completed"++(show n))
---                 makenframes (n+1) end
-
 
 offset :: (Double, Double)
 offset = (0.099, 0.89398)
