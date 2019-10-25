@@ -7,28 +7,55 @@ import Codec.FFmpeg
 import Codec.FFmpeg.Juicy
 import Control.Monad (forM_)
 
+-- Main function: generates mandelbrot images and then stitches them together into a video.
 main :: IO ()
 main = do
     putStrLn "Beginning rendering of image."
     let frames = generateNImages  177 180
     juicyToFFmpeg frames ("mandelbrot.avi")
+    putStrLn "Done"
 
+{-
+    Parameters to specify details for the video output.
+    EncodingParams comes from FFmpeg. The arguments of EncodingParams are:
+        * width
+        * height
+        * frames per second
+        * codec (defaults to codec inferred from file name, if Nothing)
+        * pixel format (defaults to format based on the codec, if Nothing)
+        * preset
+        * Not sure? The documentation doesn't include a seventh argument, but
+          the compiler complains if we don't provide it.
+-}
 params :: EncodingParams
 params = EncodingParams 200 200 3 (Just avCodecIdMpeg4) Nothing "" Nothing
 
+{- Given a list of images and a file path, stitch the images together with
+   FFmpeg and save the resulting video at the given file path. -}
 juicyToFFmpeg :: [Image PixelRGB8] -> FilePath -> IO ()
 juicyToFFmpeg frames fp = do
+                        -- Initialize FFmpeg
                         initFFmpeg
+                        -- Create writer to write a video stream to the given file
                         writer <- imageWriter params fp
-                        -- give Just image data to writer to append it
+                        -- writer is a function: (Maybe (Image p) -> IO ())
+                        {- For each of the images: wrap it in a Just and pass the 
+                           result into the writer to append it to the video stream -}
                         forM_ frames (writer . Just)
+                        {- "Nothing" must be included to close the output stream 
+                           and properly terminate video encoding -}
                         writer Nothing
 
+{- 
+   Generate mandelbrot images, given a start frame and an end frame.
+   The start frame and end frame are so that we the program can be run at the same time
+   on multiple computers and manually stitch together those videos, since it takes a
+   long time for the program to run.  
+-}                      
 generateNImages :: Int -> Int -> [Image PixelRGB8]
-
 generateNImages start end
-                |start > end = []
-                |otherwise     = (generateFractal end):(generateNImages start (end-1))
+                | start > end = []
+                | otherwise     = (generateFractal end):(generateNImages start (end-1))
 
 offset :: (Double, Double)
 offset = (0.099, 0.89398)
