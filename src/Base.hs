@@ -10,8 +10,12 @@ import Control.Monad (forM_)
 -- Main function: generates mandelbrot images and then stitches them together into a video.
 main :: IO ()
 main = do
+    putStrLn "Enter the beginning frame number"
+    start <- getLine
+    putStrLn "Enter the end frame number"
+    end <- getLine
     putStrLn "Beginning rendering of image."
-    let frames = generateNImages  177 180
+    let frames = generateNImages (read start :: Int) (read end :: Int)
     juicyToFFmpeg frames ("mandelbrot.avi")
     putStrLn "Done"
 
