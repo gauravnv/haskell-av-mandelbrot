@@ -15,13 +15,15 @@ main = do
     putStrLn "Enter the end frame number"
     ending <- getLine
     putStrLn "Beginning rendering of image."
-    let start = (read beginning :: Int)
-        -- if (start < 1) then (let start = 1)
-    let end = (read ending :: Int)
-        -- if (end < 1) then (let end = 1)
+    let start = sanitizeInput (read beginning :: Int)
+    let end = sanitizeInput (read ending :: Int)
     let frames = generateNImages start end
-    juicyToFFmpeg frames ("mandelbrot.avi")
+    juicyToFFmpeg frames ("mandelbrot.mp4")
     putStrLn "Done"
+    where
+        sanitizeInput x
+            | x < 0 = error "Number cannot be negative"
+            | otherwise = x
 
 {-
     Parameters to specify details for the video output.
@@ -36,7 +38,7 @@ main = do
           the compiler complains if we don't provide it.
 -}
 params :: EncodingParams
-params = EncodingParams 200 200 3 (Just avCodecIdMpeg4) Nothing "" Nothing
+params = EncodingParams 200 200 3 Nothing Nothing "" Nothing
 
 {- Given a list of images and a file path, stitch the images together with
    FFmpeg and save the resulting video at the given file path. -}
