@@ -10,22 +10,22 @@ import Control.Monad (forM_)
 -- Main function: generates mandelbrot images and then stitches them together into a video.
 main :: IO ()
 main = do
-    putStrLn "Enter beginning frame number"
+    putStrLn "Enter a non-negative beginning frame number"
     beginning <- getLine
     putStrLn "Enter a non-negative end frame number"
     ending <- getLine
     let start = sanitizeInput (read beginning :: Int)
     let end = sanitizeInput (read ending :: Int)
-    putStrLn "Enter first (red) color parameter"
+    putStrLn "Enter a number for red color parameter"
     col1 <- getLine
-    putStrLn "Enter second (green) color parameter"
+    putStrLn "Enter a number for green color parameter"
     col2 <- getLine
-    putStrLn "Enter third (blue) color parameter"
+    putStrLn "Enter a number for blue color parameter"
     col3 <- getLine
     let c12 = ((read col1 :: Int), (read col2 :: Int), (read col3 :: Int))
     let frames = generateNImages start end c12
     putStrLn "Beginning video render."
-    juicyToFFmpeg frames ("mandelbrot.mp4")
+    juicyToFFmpeg frames ("mandelbrot"++(show start)++(show end)++".mp4")
     putStrLn "Done"
     where
         sanitizeInput x
@@ -44,15 +44,8 @@ main = do
         * Not sure? The documentation doesn't include a seventh argument, but
           the compiler complains if we don't provide it.
 -}
-
-width :: Int
-width = 1920
-
-height :: Int
-height = 1080
-
 params :: EncodingParams
-params = EncodingParams 1920 1080 24 Nothing Nothing "" Nothing
+params = EncodingParams 720 540 15 Nothing Nothing "" Nothing
 
 {- Given a list of images and a file path, stitch the images together with
    FFmpeg and save the resulting video at the given file path. -}
@@ -84,29 +77,33 @@ generateNImages start end c123
 
 
 offset :: (Double, Double)
-offset = (0.099, 0.893983)
+offset = (0.3750001200618655, -0.2166393884377127)
 
+-- Defines how fast we zoom into a fractal
 zoomfactor :: Double
 zoomfactor = 0.03
 
-extractFst :: (Int, Int, Int) -> Int
-extractFst (a,_,_) = a
+-- Defines the width of each frame
+width :: Int
+width = 720
 
-extractSnd :: (Int, Int, Int) -> Int
-extractSnd (_,a,_) = a
+-- Defines the height of each frame
+height :: Int
+height = 540
 
-extractThd :: (Int, Int, Int) -> Int
-extractThd (_,_,a) = a
-
+-- Generates n-th Mandelbrot fractal frame for the video
 generateFractal :: Int -> (Int, Int, Int) -> Image PixelRGB8
 generateFractal n c123 = (generateImage (mandelbrot n c123)) width height
 
+-- Number of iterations to go through to check if the number set is a Mandelbrot set
 iters :: Int -> Int
 iters n = 25 + n*n
 
+-- Colour palette to choose colors from when we overshoot from iterations in iters
 palette :: Int -> (Int, Int, Int) -> [PixelRGB8]
-palette n c123 = foldr (\a -> \b -> (PixelRGB8 (fromIntegral $a*(extractFst c123)) (fromIntegral $a*(extractSnd c123)) (fromIntegral $a*(extractThd c123))):b) [] [0..(iters n)]
+palette n (red, green, blue) = foldr (\a -> \b -> (PixelRGB8 (fromIntegral $a*red) (fromIntegral $a*green) (fromIntegral $a*blue)):b) [] [0..(iters n)]
 
+-- Generates pixel for each number set with getColor function if set is in Mandelbrot else use palette
 mandelbrot :: Int -> (Int, Int, Int) -> Int -> Int -> PixelRGB8
 mandelbrot n c123 x0 y0 = getColor 0 0 0 n c123
     where getColor :: Double -> Double -> Int -> Int -> (Int, Int, Int) -> PixelRGB8
@@ -118,8 +115,10 @@ mandelbrot n c123 x0 y0 = getColor 0 0 0 n c123
                                          c123
                            else (palette n c123)!!i
 
+-- Horizontally scales the image while zooming in
 scaleX :: Int -> Int -> Double
 scaleX x n = (3.5/ (zoomfactor*(fromIntegral (n*n*n)))) * (fromIntegral x) / (fromIntegral width) - fst offset
 
+-- Vertically scales the image while zooming in
 scaleY :: Int -> Int -> Double
 scaleY y n = (2/ (zoomfactor*(fromIntegral (n*n*n)))) * (fromIntegral y) / (fromIntegral height) - snd offset
