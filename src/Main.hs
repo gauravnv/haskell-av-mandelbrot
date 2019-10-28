@@ -45,7 +45,7 @@ main = do
           the compiler complains if we don't provide it.
 -}
 params :: EncodingParams
-params = EncodingParams 720 540 15 Nothing Nothing "" Nothing
+params = EncodingParams 800 600 10 Nothing Nothing "" Nothing
 
 {- Given a list of images and a file path, stitch the images together with
    FFmpeg and save the resulting video at the given file path. -}
@@ -77,7 +77,8 @@ generateNImages start end c123
 
 
 offset :: (Double, Double)
-offset = (0.3750001200618655, -0.2166393884377127)
+-- offset = (0.3750001200618655, -0.2166393884377127) <- This is for a new focus point for zoom
+offset = (0.099, 0.893983)
 
 -- Defines how fast we zoom into a fractal
 zoomfactor :: Double
@@ -85,11 +86,11 @@ zoomfactor = 0.03
 
 -- Defines the width of each frame
 width :: Int
-width = 720
+width = 800
 
 -- Defines the height of each frame
 height :: Int
-height = 540
+height = 600
 
 -- Generates n-th Mandelbrot fractal frame for the video
 generateFractal :: Int -> (Int, Int, Int) -> Image PixelRGB8
@@ -107,12 +108,12 @@ palette n (red, green, blue) = foldr (\a -> \b -> (PixelRGB8 (fromIntegral $a*re
 mandelbrot :: Int -> (Int, Int, Int) -> Int -> Int -> PixelRGB8
 mandelbrot n c123 x0 y0 = getColor 0 0 0 n c123
     where getColor :: Double -> Double -> Int -> Int -> (Int, Int, Int) -> PixelRGB8
-          getColor x y i n c123 = if x*x + y*y < 2*2 && i < (iters n)
+          getColor x y i n (r, g, b) = if x*x + y*y < 2*2 && i < (iters n)
                            then getColor (x*x - y*y + (scaleX x0 n))
                                          (2*x*y + (scaleY y0 n))
                                          (i+1)
                                          n
-                                         c123
+                                         (r,g,b)
                            else (palette n c123)!!i
 
 -- Horizontally scales the image while zooming in
