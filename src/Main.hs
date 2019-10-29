@@ -7,6 +7,9 @@ import Codec.FFmpeg
 import Codec.FFmpeg.Juicy
 import Control.Monad (forM_)
 
+-- Acknowledgement: this project is based on https://github.com/alexbooth/fraskell/blob/master/fract.hs
+
+
 -- Main function: generates mandelbrot images and then stitches them together into a video.
 main :: IO ()
 main = do
